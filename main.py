@@ -1,43 +1,23 @@
-import cv2 as cv
+import cv2
+import time
+from concurrent_videocapture import ConcurrentVideoCapture
 
+cam_port = 1
+cap = ConcurrentVideoCapture(cam_port)
 
- 
-# initialize the camera
-# If you have multiple camera connected with 
-# current device, assign a value in cam_port 
-# variable according to that
-cam_port = 0
-cam = cv.VideoCapture(cam_port)
-  
-# reading the input using the camera
-result, image = cam.read()
-  
-# If image will detected without any error, 
-# show result
-if result:
-    
-    gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
-    ret, corners = cv.findChessboardCorners(gray, (7,6), None)
+while True:
+    init = time.time()
+    grabbed, frame = cap.read()
+    grayFrame = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+    hsvFrame = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
+    hslFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2YCrCb)
 
-if ret == True:
-    image = cv.drawChessboardCorners(image, (7,6), corners, ret)
-
-
-    # showing result, it take frame name and image 
-    # output
-    cv.imshow("capture", image)
-    cv.imshow("gray", gray)
-
-
-
-    # saving image in local storage
-    cv.imwrite("capture.png", image)
-  
-    # If keyboard interrupt occurs, destroy image 
-    # window
-    cv.waitKey(0)
-    cv.destroyAllWindows
-  
-# If captured image is corrupted, moving to else part
-else:
-    print("No image detected. Please! try again")
+    cv2.imshow("Colour Video Capture", frame)
+    cv2.imshow("BW Video Capture", grayFrame)
+    cv2.imshow("HSV Video Capture", hsvFrame)
+    cv2.imshow("YCrCb Video Capture", hslFrame)
+    key = cv2.waitKey(1)
+    if key == 27:  # ESC
+        break
+    fps = 75
+cap.release()
