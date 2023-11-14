@@ -1,66 +1,52 @@
 import cv2
-from concurrent_videocapture import ConcurrentVideoCapture
 import numpy as np
 
-cam_port = 1
-cam = ConcurrentVideoCapture(cam_port)
-result, image = cam.read()
-if result == True:
-    gray = cv2.convertScaleAbs(image,1)
-    result = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    cv2.imwrite("Image.png", result)
-image = cv2.imread("Image.png")
-def translate(image):
-    result = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    cv2.imwrite("Image.png", result)
-    image = cv2.imread("Image.png")
-# Finds the inside corners for a 8x8 board
-ret, corners = cv2.findChessboardCorners(image, (7, 7), None)
+def getChessboardCorners(image):
+    # Convert the image to grayscale
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-# Inner Corners of the 8x8 search
-topLeft = corners[42][0]
-topRight = corners[0][0]
-btmLeft = corners[48][0]
-btmRight = corners[6][0]
+    # Use the Canny edge detection method to find edges
+    edges = cv2.Canny(gray, 50, 150, apertureSize=3)
 
-painted_image = cv2.circle(image, (int(topLeft[0]),int(topLeft[1])), radius=10, color=(0, 255, 0), thickness=-1)
-painted_image = cv2.circle(image, (int(topRight[0]),int(topRight[1])), radius=10, color=(0, 255, 0), thickness=-1)
-painted_image = cv2.circle(image, (int(btmLeft[0]),int(btmLeft[1])), radius=10, color=(0, 255, 0), thickness=-1)
-painted_image = cv2.circle(image, (int(btmRight[0]),int(btmRight[1])), radius=10, color=(0, 255, 0), thickness=-1)
-cv2.putText(image,"TopRight", (int(topRight[0]),int(topRight[1])), cv2.FONT_HERSHEY_TRIPLEX, 2, 255)
-cv2.putText(image,"TopLeft", (int(topLeft[0]),int(topLeft[1])), cv2.FONT_HERSHEY_TRIPLEX, 2, 255)
+    # Find contours in the edges
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
+    # Sort the contours by area in descending order and keep the largest one
+    contours = sorted(contours, key=cv2.contourArea, reverse=True)[:1]
 
-# Finds the outer corners of the chessboard
-xy_diff = corners[8][0] - corners[0][0] #Find the side lengths of a square
+    # Get the outer corners of the largest contour
+    corners = cv2.approxPolyDP(contours[0], 0.01 * cv2.arcLength(contours[0], True), True)
 
-topLeft[0] += xy_diff[0]
-topLeft[1] -= xy_diff[1]
-topRight[0] -= xy_diff[0]
-topRight[1] += xy_diff[1]
-btmLeft[0] += xy_diff[0]
-btmLeft[1] -= xy_diff[1]
-btmRight[0] -= xy_diff[0]
-btmRight[1] += xy_diff[1]
+    # Puts the corner points into a numpy array for efficient processing
+    cornerPoints = np.array(corners, dtype='float32')
+    return cornerPoints
 
-cornerPoints = np.array([topLeft, topRight, btmRight, btmLeft], dtype='float32')
+def removeBorder(fileName):
+    # Load your image
+    img = cv2.imread(f'{fileName}.png')
 
-painted_image = cv2.circle(image, (int(topLeft[0]),int(topLeft[1])), radius=10, color=(0, 0, 255), thickness=-1)
-painted_image = cv2.circle(image, (int(topRight[0]),int(topRight[1])), radius=10, color=(0, 0, 255), thickness=-1)
-painted_image = cv2.circle(image, (int(btmLeft[0]),int(btmLeft[1])), radius=10, color=(0, 0, 255), thickness=-1)
-painted_image = cv2.circle(image, (int(btmRight[0]),int(btmRight[1])), radius=10, color=(0, 0, 255), thickness=-1)
-cv2.imwrite("PaintedImage.png", painted_image)
-# Set the base and height of the output resolution of transformed image - 1000x1000px
-base = 1000
-height = 1000
+    # Crop the borders of the 1000x1000px image to 900x900px
+    img = img[50:950, 50:950]
 
-# Define new corner points from base and height of the rectangle
-new_cornerPoints = np.array([[0, 0], [base, 0], [base, height], [0, height]], dtype='float32')
+    # Save the result
+    cv2.imwrite(f'{fileName}.png', img)
+def perspectiveTransform(image,corners,fileName):
 
+    # Set the base and height of the output resolution of transformed image - 1000x1000px
+    base = 1000
+    height = 1000
 
-# Calculate matrix to transform the perspective of the image
-M = cv2.getPerspectiveTransform(cornerPoints, new_cornerPoints)
+    cornerPoints = corners
+    # Define new corner points from base and height of the rectangle
+    new_cornerPoints = np.array([[0, 0], [base, 0], [base, height], [0, height]], dtype='float32')
 
-new_image = cv2.warpPerspective(image, M, (base, height))
+    # Calculate matrix to transform the perspective of the image
+    Matrix = cv2.getPerspectiveTransform(cornerPoints, new_cornerPoints)
 
-cv2.imwrite('transformed.png', new_image)
+    new_image = cv2.warpPerspective(image, Matrix, (base, height))
+
+    cv2.imwrite(f'{fileName}.png', new_image)
+
+def translate(image,fileName):
+    perspectiveTransform(image,getChessboardCorners(image),fileName)
+    removeBorder(fileName)
