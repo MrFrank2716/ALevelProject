@@ -31,7 +31,7 @@ while True:
     frame = cv2.convertScaleAbs(frame, alpha=alpha)
 
     # Resize the image
-    screen_res = 1280, 720  # Screen resolution
+    screen_res = 720, 720  # Screen resolution
     scale_width = screen_res[0] / frame.shape[1]
     scale_height = screen_res[1] / frame.shape[0]
     scale = min(scale_width, scale_height)
@@ -41,9 +41,13 @@ while True:
 
     cv2.imshow('Chessboard', frame)
 
+    global matrix
+
     key = cv2.waitKey(1)
     if key == ord('a'):  # 'a' key
-        translate(original_frame,"transformed")
+        matrix = getMatrix(getChessboardCorners(original_frame))
+    elif key == ord("s"):
+        translate(original_frame,matrix,"transformed")
     elif key == 27:  # ESC
         break
     fps = 75

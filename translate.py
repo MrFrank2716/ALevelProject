@@ -30,25 +30,28 @@ def removeBorder(fileName):
 
     # Save the result
     cv2.imwrite(f'{fileName}.png', img)
-def perspectiveTransform(image,corners,fileName):
+def perspectiveTransform(image,matrix,fileName):
 
     # Set the base and height of the output resolution of transformed image - 1000x1000px
     base = 900
     height = 900
 
+    new_image = cv2.warpPerspective(image, matrix, (base, height))
+
+    cv2.imwrite(f'{fileName}.png', new_image)
+
+def getMatrix(corners):
+    base, height = 900, 900
     cornerPoints = corners
     # Define new corner points from base and height of the rectangle
     new_cornerPoints = np.array([[0, 0], [base, 0], [base, height], [0, height]], dtype='float32')
 
     # Calculate matrix to transform the perspective of the image
-    Matrix = cv2.getPerspectiveTransform(cornerPoints, new_cornerPoints)
+    matrix = cv2.getPerspectiveTransform(cornerPoints, new_cornerPoints)
+    return matrix
 
-    new_image = cv2.warpPerspective(image, Matrix, (base, height))
-
-    cv2.imwrite(f'{fileName}.png', new_image)
-
-def translate(image,fileName):
-    perspectiveTransform(image,getChessboardCorners(image),fileName)
+def translate(image,matrix,fileName):
+    perspectiveTransform(image,matrix,fileName)
     removeBorder(fileName)
     splitSquares(fileName)
 def splitSquares(fileName):
@@ -76,4 +79,3 @@ def splitSquares(fileName):
 
             # Save the square as a PNG file
             cv2.imwrite(os.path.join(dir_name, f'square_{i//square_size}_{j//square_size}.png'), square)
-            print(squares)
