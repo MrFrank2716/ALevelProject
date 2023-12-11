@@ -3,7 +3,7 @@ import time
 from translate import *
 from concurrent_videocapture import ConcurrentVideoCapture
 
-cam_port = 1
+cam_port = 0
 cap = ConcurrentVideoCapture(cam_port)
 
 # Initial contrast value
