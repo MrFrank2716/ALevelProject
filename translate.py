@@ -3,24 +3,27 @@ import os
 import numpy as np
 
 def getChessboardCorners(image):
-    # Convert the image to grayscale
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    try:
+        # Convert the image to grayscale
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    # Use the Canny edge detection method to find edges
-    edges = cv2.Canny(gray, 50, 150, apertureSize=3)
+        # Use the Canny edge detection method to find edges
+        edges = cv2.Canny(gray, 50, 150, apertureSize=3)
 
-    # Find contours in the edges
-    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        # Find contours in the edges
+        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        # Sort the contours by area in descending order and keep the largest one
+        contours = sorted(contours, key=cv2.contourArea, reverse=True)[:1]
 
-    # Sort the contours by area in descending order and keep the largest one
-    contours = sorted(contours, key=cv2.contourArea, reverse=True)[:1]
-
-    # Get the outer corners of the largest contour
-    corners = cv2.approxPolyDP(contours[0], 0.01 * cv2.arcLength(contours[0], True), True)
-    # Puts the corner points into a numpy array for efficient processing
-    cornerPoints = np.array(corners, dtype='float32')
-    return cornerPoints
-
+        # Get the outer corners of the largest contour
+        corners = cv2.approxPolyDP(contours[0], 0.01 * cv2.arcLength(contours[0], True), True)
+        # Puts the corner points into a numpy array for efficient processing
+        cornerPoints = np.array(corners, dtype='float32')
+        return cornerPoints
+    except:
+        # Return default corner points if an exception occurs
+        cornerPoints = np.array([[0, 0], [900, 0], [900, 900], [0, 900]], dtype='float32')
+        return cornerPoints
 def removeBorder(fileName):
     # Load your image
     img = cv2.imread(f'{fileName}.png')
