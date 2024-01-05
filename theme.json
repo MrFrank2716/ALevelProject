@@ -1,10 +1,13 @@
- {
+{
+    "window": {
+        "bg": "21282D"
+    },
      "defaults":
      {
          "colours":
          {
              "normal_bg":"#45494e",
-             "hovered_bg":"#35393e",
+             "hovered_bg":"#eb4034",
              "disabled_bg":"#25292e",
              "selected_bg":"#193754",
              "dark_bg":"#15191e",
@@ -25,4 +28,4 @@
              "unfilled_bar":"#CCCCCC"
          }
      }
- }
+}

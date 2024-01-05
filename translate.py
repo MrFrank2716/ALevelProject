@@ -73,12 +73,17 @@ def splitSquares(fileName):
     if not os.path.exists(dir_name):
         os.makedirs(dir_name)
 
+    # Define the labels for the columns
+    cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+
     # Split the image into squares
     for i in range(0, img.shape[0], square_size):
+        row = []  # Start a new row
         for j in range(0, img.shape[1], square_size):
-            # Crop the square from the image and append it to the squares array
+            # Crop the square from the image and append it to the row
             square = img[i:i + square_size, j:j + square_size]
-            squares.append(square)
+            row.append(square)
 
-            # Save the square as a PNG file
-            cv2.imwrite(os.path.join(dir_name, f'square_{i//square_size}_{j//square_size}.png'), square)
+            # Save the square as a PNG file with the chess notation
+            cv2.imwrite(os.path.join(dir_name, f'square_{cols[j//square_size]}_{i//square_size+1}.png'), square)
+        squares.append(row)  # Append the row to squares
