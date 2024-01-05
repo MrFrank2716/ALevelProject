@@ -1,10 +1,13 @@
 import os
 import pygame
 import pygame_gui
+from PIL import Image
 
+import settings
+from settings import *
 def draw_board(manager, window_surface, window_width):
     # Load the image
-    image_path = "images/board.png"
+    image_path = settings.return_value("chessboard_image_path")
     board_image = pygame.image.load(image_path)
 
     # Create a UIImage
@@ -45,6 +48,28 @@ class Piece:
 
 def draw_pieces(manager, window_surface, window_width):
     # Load the image
-    pawn_image_path = "images/white-pawn.png"
+    pawn_image_path = settings.return_value("white_pawn")
     pawn_image = pygame.image.load(pawn_image_path)
     pawn = Piece()
+
+
+import time
+st = time.time()
+def detect_chess_piece(image_path, square_colour): # The square's colour passed through is a grayscale value 0-255 a value of 200 seems to work brilliantly for a green board.
+    img = Image.open(image_path).convert('L')  # Converts the image to grayscale so it's easier to compare colours.
+    width, height = img.size
+
+    # Define points for the 4x4 grid locations to grab the colours.
+    points = [(x, y) for x in range(width//2 - 2, width//2 + 2) for y in range(height//2 - 2, height//2 + 2)]
+
+    # Get the colours of the points using the PIL package built into python.
+    colours = [img.getpixel(point) for point in points]
+
+    # Check if the middle points are a different color than the square which is passed through as a parameter.
+    return any(abs(colour - square_colour) > settings.return_value("detect_chess_piece_threshold") for colour in colours)  # Threshold for the colour comparision - this seems to work great for a green board.
+
+print(detect_chess_piece("squares/square_C_1.png",200))
+
+et = time.time()
+elapsed = et - st
+print("Execution time:",elapsed)

@@ -33,8 +33,8 @@ class App:
 
                                                                  )
 
-            self.rotate_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((0, 475), (100, 50)),
-                                                                 text='Rotate',
+            self.convert_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((0, 475), (100, 50)),
+                                                                 text='Convert',
                                                                  manager=self.manager,
 
                                                                  )
@@ -68,14 +68,14 @@ class App:
 
                 if event.type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.matrix_button:
-                        print("Matrix Successful")
                         self.matrix = getMatrix(getChessboardCorners(frame))
+                        print("Matrix Successful")
                     if event.ui_element == self.transform_button:
-                        print("Transform Successful")
                         translate(frame, self.matrix, "transformed")
-                    if event.ui_element == self.rotate_button:
-                        print("Rotate Successful")
+                        print("Transform Successful")
+                    if event.ui_element == self.convert_button:
                         calibration.update()
+                        print("Convert Successful")
 
 
                 self.manager.process_events(event)
