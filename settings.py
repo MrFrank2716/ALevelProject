@@ -8,6 +8,9 @@ class GlobalSettings:
   def return_value(self,set):
     return self.setting_values[set]
 
+  def set_value(self,set,val):
+    self.setting_values[set] = val
+
 settings = GlobalSettings()
 
 class PieceSettings:

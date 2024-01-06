@@ -28,7 +28,7 @@ def removeBorder(fileName):
     # Load your image
     img = cv2.imread(f'{fileName}.png')
 
-    # Crop the borders of the 1000x1000px image to 900x900px
+    # Crop the borders of the 1000x1000px image to 800x800px
     img = img[50:850, 50:850]
 
     # Save the result
@@ -73,17 +73,17 @@ def splitSquares(fileName):
     if not os.path.exists(dir_name):
         os.makedirs(dir_name)
 
-    # Define the labels for the columns
+    # Define the labels for the ranks/columns
     cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 
     # Split the image into squares
     for i in range(0, img.shape[0], square_size):
         row = []  # Start a new row
         for j in range(0, img.shape[1], square_size):
-            # Crop the square from the image and append it to the row
+            # Crop the square from the image and append it to the rows
             square = img[i:i + square_size, j:j + square_size]
             row.append(square)
 
             # Save the square as a PNG file with the chess notation
-            cv2.imwrite(os.path.join(dir_name, f'square_{cols[j//square_size]}_{i//square_size+1}.png'), square)
+            cv2.imwrite(os.path.join(dir_name, f'{cols[j//square_size]}_{i//square_size+1}.png'), square)
         squares.append(row)  # Append the row to squares

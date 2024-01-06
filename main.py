@@ -1,5 +1,7 @@
 import cv2
 import time
+
+import gamestate
 from translate import *
 from gamestate import *
 from calibration import *
@@ -42,7 +44,7 @@ class App:
     def run(self):
 
         calibration = Calibration(self.manager,self.window_surface)
-
+        chessboard = ChessBoard(self.manager, self.window_surface, self.window_width)
         running = True
         while running:
             time_delta = time.time()
@@ -58,8 +60,8 @@ class App:
             frame_surface = pygame.transform.rotate(frame_surface, -90)
             frame_surface = pygame.transform.scale(frame_surface, (self.window_width/4,self.window_height/4))
 
-            draw_board(self.manager,self.window_surface,self.window_width)
-            calibration.draw()
+
+            chessboard.draw_board(game.get_latest_board_string(),settings.return_value("chessboard_image_path"))
 
 
             for event in pygame.event.get():
@@ -74,8 +76,8 @@ class App:
                         translate(frame, self.matrix, "transformed")
                         print("Transform Successful")
                     if event.ui_element == self.convert_button:
-                        calibration.update()
-                        print("Convert Successful")
+                        gamestate.movepieces(game.board)
+                        print("Move Successful")
 
 
                 self.manager.process_events(event)
