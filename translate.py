@@ -1,89 +1,75 @@
 import cv2
-import os
 import numpy as np
+import os
+import settings
+from settings import *
+class Translator:
+    def __init__(self):
+        self.base = settings.return_value("base")
+        self.height = settings.return_value("height")
+        self.square_size = settings.return_value("square_size")
+        self.transformed_image_name = settings.return_value("transformed_image_name")
+        self.matrix = None
 
-def getChessboardCorners(image):
-    try:
-        # Convert the image to grayscale
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    def setMatrix(self,new_matrix):
+        self.matrix = new_matrix
 
-        # Use the Canny edge detection method to find edges
-        edges = cv2.Canny(gray, 50, 150, apertureSize=3)
+    def returnMatrix(self):
+        return self.matrix
+    def return_transformed_image_name(self):
+        return self.transformed_image_name
+    def getChessboardCorners(self, image):
+        settings.set_value("latest_caption", "Finding Chessboard Corners...")
+        try:
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            edges = cv2.Canny(gray, 50, 150, apertureSize=3)
+            contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            contours = sorted(contours, key=cv2.contourArea, reverse=True)[:1]
+            corners = cv2.approxPolyDP(contours[0], 0.01 * cv2.arcLength(contours[0], True), True)
+            cornerPoints = np.array(corners, dtype='float32')
+            return cornerPoints
+        except:
+            cornerPoints = np.array([[0, 0], [self.base, 0], [self.base, self.base], [0, self.base]], dtype='float32')
+            return cornerPoints
 
-        # Find contours in the edges
-        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        # Sort the contours by area in descending order and keep the largest one
-        contours = sorted(contours, key=cv2.contourArea, reverse=True)[:1]
+    def removeBorder(self, fileName):
+        settings.set_value("latest_caption", "Removing Border...")
+        img = cv2.imread(f'{fileName}.png')
+        img = img[50:850, 50:850]
+        cv2.imwrite(f'{fileName}.png', img)
 
-        # Get the outer corners of the largest contour
-        corners = cv2.approxPolyDP(contours[0], 0.01 * cv2.arcLength(contours[0], True), True)
-        # Puts the corner points into a numpy array for efficient processing
-        cornerPoints = np.array(corners, dtype='float32')
-        return cornerPoints
-    except:
-        # Return default corner points if an exception occurs
-        cornerPoints = np.array([[0, 0], [900, 0], [900, 900], [0, 900]], dtype='float32')
-        return cornerPoints
-def removeBorder(fileName):
-    # Load your image
-    img = cv2.imread(f'{fileName}.png')
+    def perspectiveTransform(self, image, matrix, fileName):
+        settings.set_value("latest_caption", "Perspective Warping...")
+        new_image = cv2.warpPerspective(image, matrix, (self.base, self.height))
+        cv2.imwrite(f'{fileName}.png', new_image)
 
-    # Crop the borders of the 1000x1000px image to 800x800px
-    img = img[50:850, 50:850]
+    def calculateMatrix(self, corners):
+        settings.set_value("latest_caption", "Calculating Matrix...")
+        cornerPoints = corners
+        new_cornerPoints = np.array([[0, 0], [self.base, 0], [self.base, self.height], [0, self.height]], dtype='float32')
+        matrix = cv2.getPerspectiveTransform(cornerPoints, new_cornerPoints)
+        return matrix
 
-    # Save the result
-    cv2.imwrite(f'{fileName}.png', img)
-def perspectiveTransform(image,matrix,fileName):
+    def translate(self, image, matrix, fileName):
+        settings.set_value("latest_caption", "Translating the Chessboard...")
+        self.perspectiveTransform(image, matrix, fileName)
+        self.removeBorder(fileName)
+        self.splitSquares(fileName)
 
-    # Set the base and height of the output resolution of transformed image - 1000x1000px
-    base = 900
-    height = 900
+    def splitSquares(self, fileName):
+        settings.set_value("latest_caption", "Splitting the chessboard squares...")
+        img = cv2.imread(f"{fileName}.png")
+        squares = []
+        dir_name = os.getcwd() + "\squares"
+        if not os.path.exists(dir_name):
+            os.makedirs(dir_name)
+        cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+        for i in range(0, img.shape[0], self.square_size):
+            row = []
+            for j in range(0, img.shape[1], self.square_size):
+                square = img[i:i + self.square_size, j:j + self.square_size]
+                row.append(square)
+                cv2.imwrite(os.path.join(dir_name, f'{cols[j//self.square_size]}_{i//self.square_size+1}.png'), square)
+            squares.append(row)
 
-    new_image = cv2.warpPerspective(image, matrix, (base, height))
-
-    cv2.imwrite(f'{fileName}.png', new_image)
-
-def getMatrix(corners):
-    base, height = 900, 900
-    cornerPoints = corners
-    # Define new corner points from base and height of the rectangle
-    new_cornerPoints = np.array([[0, 0], [base, 0], [base, height], [0, height]], dtype='float32')
-
-    # Calculate matrix to transform the perspective of the image
-    matrix = cv2.getPerspectiveTransform(cornerPoints, new_cornerPoints)
-    return matrix
-
-def translate(image,matrix,fileName):
-    perspectiveTransform(image,matrix,fileName)
-    removeBorder(fileName)
-    splitSquares(fileName)
-def splitSquares(fileName):
-    img = cv2.imread(f"{fileName}.png")
-    # Define the size of the squares px
-    square_size = 100
-
-    # Array to hold the squares
-    squares = []
-
-    # Directory to save the images
-
-    dir_name = os.getcwd() + "\squares"
-
-    # Create the directory if it doesnt exist
-    if not os.path.exists(dir_name):
-        os.makedirs(dir_name)
-
-    # Define the labels for the ranks/columns
-    cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-
-    # Split the image into squares
-    for i in range(0, img.shape[0], square_size):
-        row = []  # Start a new row
-        for j in range(0, img.shape[1], square_size):
-            # Crop the square from the image and append it to the rows
-            square = img[i:i + square_size, j:j + square_size]
-            row.append(square)
-
-            # Save the square as a PNG file with the chess notation
-            cv2.imwrite(os.path.join(dir_name, f'{cols[j//square_size]}_{i//square_size+1}.png'), square)
-        squares.append(row)  # Append the row to squares
+translator = Translator()
