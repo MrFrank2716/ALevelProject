@@ -1,10 +1,10 @@
 import cv2
 import time
-
 import gamestate
 from translate import *
 from gamestate import *
 from calibration import *
+from settings import *
 from concurrent_videocapture import ConcurrentVideoCapture
 import pygame_gui, pygame
 
@@ -17,12 +17,15 @@ class App:
 
             pygame.init()
 
-            self.window_width = 800
-            self.window_height = 600
+            self.window_width = settings.return_value("window_width")
+            self.window_height = settings.return_value("window_height")
             self.window_surface = pygame.display.set_mode((self.window_width, self.window_height))
 
             self.manager = pygame_gui.UIManager((self.window_width, self.window_height),'main.json')
             self.manager.get_theme().load_theme('main.json')
+            pygame.display.set_caption("Main Window")
+
+            # Declaring all the buttons
             self.matrix_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((0, 275), (100, 50)),
                                                               text='Matrix',
                                                               manager=self.manager,
@@ -40,10 +43,14 @@ class App:
                                                                  manager=self.manager,
 
                                                                  )
+            self.calibration_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((0, 575), (100, 50)),
+                                                               text='Calibration',
+                                                               manager=self.manager,
+
+                                                               )
 
     def run(self):
 
-        calibration = Calibration(self.manager,self.window_surface)
         chessboard = ChessBoard(self.manager, self.window_surface, self.window_width)
         running = True
         while running:
@@ -78,7 +85,10 @@ class App:
                     if event.ui_element == self.convert_button:
                         gamestate.movepieces(game.board)
                         print("Move Successful")
-
+                    if event.ui_element == self.calibration_button:
+                        calibration_window = CalibrationWindow()
+                        calibration_window.show()
+                        pygame.display.update()
 
                 self.manager.process_events(event)
             self.manager.update(time_delta)
@@ -90,6 +100,9 @@ class App:
         self.cap.release()
         pygame.quit()
 
-if __name__ == "__main__":
-    app = App()
-    app.run()
+def start_main():
+    if __name__ == "__main__":
+        app = App()
+        app.run()
+
+start_main()

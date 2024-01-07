@@ -1,24 +1,43 @@
 import pygame
 import pygame_gui
 
-class Calibration:
-    def __init__(self, manager, surface):
-        self.manager = manager
-        self.surface = surface
-        self.font = pygame.font.Font(None, 24)
-        self.text_a1 = self.font.render('A1', True, (0, 0, 0))
-        self.text_h8 = self.font.render('H8', True, (0, 0, 0))
-        self.angle = 90
+import main
+from settings import *
+from main import *
+class CalibrationWindow:
+    def __init__(self):
+        self.window_width = settings.return_value("window_width")
+        self.window_height = settings.return_value("window_height")
+        self.window_surface = pygame.display.set_mode((self.window_width, self.window_height))
+        self.manager = pygame_gui.UIManager((self.window_width, self.window_height))
+        pygame.display.set_caption("Calibration Window")
 
-    def draw(self):
-        rotated_a1 = pygame.transform.rotate(self.text_a1, self.angle)
-        rotated_h8 = pygame.transform.rotate(self.text_h8, self.angle)
+        # Declaring all the buttons
+        self.main_window_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((0, 275), (100, 50)),
+                                                               text='Main Window',
+                                                               manager=self.manager,
+                                                               )
 
-        rect_a1 = rotated_a1.get_rect(center=(100, 500))  # bottom left
-        rect_h8 = rotated_h8.get_rect(center=(700, 100))  # top right
+    def show(self):
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
 
-        self.surface.blit(rotated_a1, rect_a1)
-        self.surface.blit(rotated_h8, rect_h8)
+                if event.type == pygame_gui.UI_BUTTON_PRESSED:
+                    if event.ui_element == self.main_window_button:
+                        running = False  # Stop updating the current window
 
-    def update(self):
-        self.angle = (self.angle + 90) % 360  # rotate by 90 degree
+                if running:  # Only process events and update the window if running is True
+                    self.manager.process_events(event)
+
+                    self.manager.update(0.1)  # Update the UI manager
+
+                    self.window_surface.fill((0, 0, 0))  # Fill the window with black color
+                    self.manager.draw_ui(self.window_surface)  # Draw the UI
+
+                    pygame.display.update()  # Update the display
+
+        # When running becomes False, start the main window
+        main.start_main()

@@ -3,7 +3,9 @@ class GlobalSettings:
     self.setting_values = {
       "detect_chess_piece_threshold": 50,
       "dark_square_colour": "Green",
-      "chessboard_image_path": "images/board.png"
+      "chessboard_image_path": "images/board.png",
+      "window_width" : 800,
+      "window_height" : 600
     }
   def return_value(self,set):
     return self.setting_values[set]
