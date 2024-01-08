@@ -17,7 +17,7 @@ class GlobalSettings:
       "square_size": 100,
       "transformed_image_name": "transformed",
       "window_switch_time": 0,
-      "camera_scale": 4
+      "camera_scale": 8
     }
 
   def return_value(self,set):

@@ -4,6 +4,7 @@ import gamestate
 import pygame_gui
 import pygame
 import settings
+import window
 from translate import *
 from gamestate import *
 from calibration import *
@@ -50,7 +51,7 @@ class App:
     def run(self):
         settings.set_value("latest_caption","Main Window")
         clock = pygame.time.Clock()
-        windowHandler = WindowHandler()
+        #windowHandler = WindowHandler()
         chessboard = ChessBoard(self.manager, self.window_surface, self.window_width)
         running = True
         chessboard.needUpdateTrue()  # Flag to indicate whether the display needs to be updated
@@ -84,7 +85,7 @@ class App:
                         settings.set_value("latest_caption","Main Window")
 
                     if event.ui_element == self.calibration_button:
-                        windowHandler.switchWindow()
+                        #windowHandler.switchWindow()
                         calibration_window = CalibrationWindow()
                         calibration_window.show()
 

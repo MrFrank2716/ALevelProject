@@ -2,6 +2,7 @@ import pygame
 import pygame_gui
 import time
 import main
+from camera import *
 from settings import *
 from main import *
 from window import *
@@ -25,7 +26,7 @@ class CalibrationWindow:
     def show(self):
         running = True
         clock = pygame.time.Clock()  # Create a clock object
-        windowHandler = WindowHandler()
+        #windowHandler = WindowHandler()
         settings.set_value("camera_scale",2)
         cameraSurface = camera.return_frame_surface()
         surface_width = cameraSurface.get_width()
@@ -40,7 +41,7 @@ class CalibrationWindow:
                 if event.type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.main_window_button:
                         settings.set_value("camera_scale",4)
-                        windowHandler.switchWindow()
+                        #windowHandler.switchWindow()
                         running = False  # Stop updating the current window
 
                 if running:  # Only process events and update the window if running is True

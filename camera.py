@@ -21,7 +21,14 @@ class Camera:
         self.frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame_surface = pygame.surfarray.make_surface(self.frame)
         frame_surface = pygame.transform.rotate(frame_surface, -90)
-        frame_surface = pygame.transform.scale(frame_surface, (self.window_width / settings.return_value("camera_scale"), self.window_height / settings.return_value("camera_scale")))
+
+        # Get the minimum dimension of the frame
+        width = frame_surface.get_width()
+        height = frame_surface.get_height()
+
+        # Scale the surface to a 1:1 aspect ratio
+        frame_surface = pygame.transform.scale(frame_surface, (
+        width / settings.return_value("camera_scale"), height / settings.return_value("camera_scale")))
         return frame_surface
 
     def return_frame(self):
