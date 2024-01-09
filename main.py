@@ -50,6 +50,7 @@ class App:
 
     def run(self):
         settings.set_value("latest_caption","Main Window")
+        settings.set_value("camera_scale",8)
         clock = pygame.time.Clock()
         #windowHandler = WindowHandler()
         chessboard = ChessBoard(self.manager, self.window_surface, self.window_width)

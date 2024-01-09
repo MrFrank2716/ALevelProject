@@ -6,8 +6,8 @@ from settings import *
 
 class Camera:
 
-    def __init__(self, cam_port=0):
-        self.cap = ConcurrentVideoCapture(cam_port)
+    def __init__(self):
+        self.cap = ConcurrentVideoCapture(settings.return_value("cam_port"))
         self.cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.75)  # 0.75 to turn on auto exposure
         self.frame = None
         self.window_width = settings.return_value("window_width")
@@ -26,7 +26,7 @@ class Camera:
         width = frame_surface.get_width()
         height = frame_surface.get_height()
 
-        # Scale the surface to a 1:1 aspect ratio
+        # Scale the surfaceto a 1:1 aspect ratio
         frame_surface = pygame.transform.scale(frame_surface, (
         width / settings.return_value("camera_scale"), height / settings.return_value("camera_scale")))
         return frame_surface
@@ -36,6 +36,7 @@ class Camera:
 
     def release_capture(self):
         self.cap.release()
+
 
 
 camera = Camera()

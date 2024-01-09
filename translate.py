@@ -35,6 +35,17 @@ class Translator:
     def removeBorder(self, fileName):
         settings.set_value("latest_caption", "Removing Border...")
         img = cv2.imread(f'{fileName}.png')
+
+        # Get the center of the image
+        center = (img.shape[1] / 2, img.shape[0] / 2)
+
+        # Define the rotation matrix
+        rotation_matrix = cv2.getRotationMatrix2D(center, settings.return_value("calibration_angle"), 1.0)
+
+        # Rotate the image
+        img = cv2.warpAffine(img, rotation_matrix, (img.shape[1], img.shape[0]), flags=cv2.INTER_LINEAR,
+                             borderMode=cv2.BORDER_CONSTANT, borderValue=(255, 255, 255))
+
         img = img[50:850, 50:850]
         cv2.imwrite(f'{fileName}.png', img)
 
@@ -71,5 +82,5 @@ class Translator:
                 row.append(square)
                 cv2.imwrite(os.path.join(dir_name, f'{cols[j//self.square_size]}_{i//self.square_size+1}.png'), square)
             squares.append(row)
-
+        settings.set_value("square_array",squares)
 translator = Translator()

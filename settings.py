@@ -9,6 +9,7 @@ class GlobalSettings:
       "window_width" : 800,
       "window_height" : 600,
       "standard_button": (100, 50),
+      "calibration_button": (160,50),
       "dark_mode": "dark_mode.json",
       "light_mode": "light_mode.json",
       "latest_caption": "Main window",
@@ -17,7 +18,10 @@ class GlobalSettings:
       "square_size": 100,
       "transformed_image_name": "transformed",
       "window_switch_time": 0,
-      "camera_scale": 8
+      "camera_scale": 8,
+      "cam_port": 0,
+      "calibration_angle": 0, # 90 degree intervals
+      "square_array": None
     }
 
   def return_value(self,set):
