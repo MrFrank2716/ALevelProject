@@ -22,13 +22,13 @@ class Camera:
         frame_surface = pygame.surfarray.make_surface(self.frame)
         frame_surface = pygame.transform.rotate(frame_surface, -90)
 
-        # Get the minimum dimension of the frame
+        # Get the dimension of the frame
         width = frame_surface.get_width()
         height = frame_surface.get_height()
 
-        # Scale the surfaceto a 1:1 aspect ratio
-        frame_surface = pygame.transform.scale(frame_surface, (
-        width / settings.return_value("camera_scale"), height / settings.return_value("camera_scale")))
+        # Scale the surface
+        # frame_surface = pygame.transform.scale(frame_surface, (
+        # width / settings.return_value("camera_scale"), height / settings.return_value("camera_scale")))
         return frame_surface
 
     def return_frame(self):
@@ -37,6 +37,13 @@ class Camera:
     def release_capture(self):
         self.cap.release()
 
+    def aspect_scale(self, img, size):
+        ix, iy = img.get_size()
+        fx, fy = size
+        scale_factor = min(fx / ix, fy / iy)
+        width = int(ix * scale_factor)
+        height = int(iy * scale_factor)
+        return pygame.transform.scale(img, (width, height))
 
 
 camera = Camera()

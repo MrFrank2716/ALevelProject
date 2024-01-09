@@ -63,7 +63,7 @@ class CalibrationWindow:
         clock = pygame.time.Clock()  # Create a clock object
         #windowHandler = WindowHandler()
         settings.set_value("camera_scale",2)
-        cameraSurface = camera.return_frame_surface()
+        #cameraSurface = camera.return_frame_surface()
 
 
         while running:
@@ -89,9 +89,12 @@ class CalibrationWindow:
             self.manager.update(time_delta)  # Update the UI manager as per the time_delta set
 
             self.window_surface.fill((0, 10, 100))  # Fill the window
+
             cameraSurface = pygame.transform.rotate(camera.return_frame_surface(), settings.return_value("calibration_angle"))
+            cameraSurface = camera.aspect_scale(cameraSurface,(650, 500))
             surface_width = cameraSurface.get_width()
             surface_height = cameraSurface.get_height()
+
             self.window_surface.blit(cameraSurface, (
                 self.window_width / 2 - surface_width /2, self.window_height /2 - surface_height /2))
 

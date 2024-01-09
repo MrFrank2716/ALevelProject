@@ -62,9 +62,13 @@ class App:
             pygame.display.set_caption(settings.return_value("latest_caption"))
             time_delta = clock.tick(60) / 1000.0  # Tick the clock and get the time delta
 
+            cameraSurface = camera.aspect_scale(camera.return_frame_surface(),(300,200))
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+
+
 
                 if event.type == pygame_gui.UI_BUTTON_PRESSED:
                     chessboard.needUpdateTrue() # Set the flag to True when a button is pressed
@@ -99,8 +103,9 @@ class App:
             if chessboard.needUpdate():  # Only update the display and redraw the chessboard if the flag is True
                 chessboard.draw_board(game.get_latest_board_string(), settings.return_value("chessboard_image_path"))
 
-            self.window_surface.blit(camera.return_frame_surface(), (
-                self.window_width / 2 - self.window_width / 8, self.window_height - self.window_height / 4))
+            self.window_surface.blit(cameraSurface, (
+                self.window_width / 2 - cameraSurface.get_width()/2, self.window_height - cameraSurface.get_height()))
+
             self.manager.draw_ui(self.window_surface)
             pygame.display.update()
         camera.release_capture()
