@@ -22,7 +22,8 @@ class Translator:
         settings.set_value("latest_caption", "Finding Chessboard Corners...")
         try:
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            edges = cv2.Canny(gray, 50, 150, apertureSize=3)
+            edges = cv2.Canny(gray, 150, 160,apertureSize=3)
+            cv2.imwrite("grayscale.png", edges)
             contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             contours = sorted(contours, key=cv2.contourArea, reverse=True)[:1]
             corners = cv2.approxPolyDP(contours[0], 0.01 * cv2.arcLength(contours[0], True), True)
@@ -52,6 +53,7 @@ class Translator:
     def perspectiveTransform(self, image, matrix, fileName):
         settings.set_value("latest_caption", "Perspective Warping...")
         new_image = cv2.warpPerspective(image, matrix, (self.base, self.height))
+        new_image = cv2.rotate(new_image, cv2.ROTATE_180)
         cv2.imwrite(f'{fileName}.png', new_image)
 
     def calculateMatrix(self, corners):
@@ -74,7 +76,7 @@ class Translator:
         dir_name = os.getcwd() + "\squares"
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
-        cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+        cols = ['H', 'G', 'F', 'E', 'D', 'C', 'B', 'A']
         for i in range(0, img.shape[0], self.square_size):
             row = []
             for j in range(0, img.shape[1], self.square_size):

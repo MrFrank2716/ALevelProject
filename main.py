@@ -4,6 +4,7 @@ import gamestate
 import pygame_gui
 import pygame
 import settings
+import translate
 import window
 from translate import *
 from gamestate import *
@@ -75,6 +76,7 @@ class App:
                     if event.ui_element == self.matrix_button:
                         translator.setMatrix(
                             translator.calculateMatrix(translator.getChessboardCorners(camera.return_frame())))
+
                         time.sleep(0.27)
                         settings.set_value("latest_caption","Main Window")
 
@@ -82,10 +84,11 @@ class App:
                         translator.translate(camera.return_frame(), translator.returnMatrix(),
                                              translator.return_transformed_image_name())
                         time.sleep(0.27)
+
                         settings.set_value("latest_caption","Main Window")
 
                     if event.ui_element == self.convert_button:
-                        gamestate.movepieces(game.board)
+                        chessGame.movepieces()
                         time.sleep(0.27)
                         settings.set_value("latest_caption","Main Window")
 
@@ -101,7 +104,7 @@ class App:
             self.window_surface.fill((0, 10, 100))  # Fill the window
 
             if chessboard.needUpdate():  # Only update the display and redraw the chessboard if the flag is True
-                chessboard.draw_board(game.get_latest_board_string(), settings.return_value("chessboard_image_path"))
+                chessboard.draw_board(chessGame.get_latest_board_string(), settings.return_value("chessboard_image_path"))
 
             self.window_surface.blit(cameraSurface, (
                 self.window_width / 2 - cameraSurface.get_width()/2, self.window_height - cameraSurface.get_height()))

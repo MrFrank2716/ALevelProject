@@ -1,7 +1,13 @@
+import random
+
 from settings import *
 import cv2
 from PIL import Image
 import numpy as np
+import os
+import chess
+from gamestate import *
+
 def old_detect_chess_piece(image_path, square_colour):  # The square's colour passed through is a black or white value 0 or 255 a value.
     img = Image.open(image_path).convert('L')  # Converts the image to grayscale so it's easier to compare colours.
     # Define a function for thresholding, 255 for white and returns 0 for black
@@ -24,6 +30,7 @@ def old_detect_chess_piece(image_path, square_colour):  # The square's colour pa
 
 class Detector:
     def __init__(self):
+        self.move_number = 1
         self.image_path = "squares/C_1"
         # Load an images of empty square for comparison
         self.empty_light_square_image = cv2.imread('squares/D_4.png')
@@ -50,8 +57,30 @@ class Detector:
             [0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0]
         ]
-    def is_square_occupied_edges(self, image_path):
+        self.previous_occupied_square_array = [
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0]
+        ]
+    def is_square_occupied_edges_black(self, image_path):
         image = cv2.imread(image_path)
+        # Define the amount to crop on each side
+        crop_amount = 10  # adjust this value as needed
+
+        # Get the dimensions of the image
+        height, width = image.shape[:2]
+
+        # Define the center and size for the crop
+        center = (width // 2, height // 2)
+        size = (width - 2 * crop_amount, height - 2 * crop_amount)
+
+        # Crop the image
+        image = cv2.getRectSubPix(image, size, center)
         # Convert the image to grayscale
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
@@ -59,8 +88,8 @@ class Detector:
         blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 
         # Use Canny edge detection to find edges in the image
-        edges = cv2.Canny(blurred, 30, 150)
-        cv2.imwrite("grayscale.png",edges)
+        edges = cv2.Canny(blurred, 60, 60)
+
         # Count the number of white pixels in the edge-detected image
         num_edges = np.sum(edges > 0)
 
@@ -69,8 +98,54 @@ class Detector:
             return True
         else:
             return False
+
+    def is_square_occupied_edges_white(self, image_path):
+        image = cv2.imread(image_path)
+        # Define the amount to crop on each side
+        crop_amount = 10  # adjust this value as needed
+
+        # Get the dimensions of the image
+        height, width = image.shape[:2]
+
+        # Define the center and size for the crop
+        center = (width // 2, height // 2)
+        size = (width - 2 * crop_amount, height - 2 * crop_amount)
+
+        # Crop the image
+        image = cv2.getRectSubPix(image, size, center)
+        # Convert the image to grayscale
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+        # Apply Gaussian blur to reduce noise
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+
+        # Use Canny edge detection to find edges in the image
+        edges = cv2.Canny(blurred, 50, 50)
+
+        # Count the number of white pixels in the edge-detected image
+        num_edges = np.sum(edges > 0)
+
+        # If the number of edges exceeds a certain threshold, assume a piece is present
+        if num_edges > 227:  # Needs to be adjusted in different lighting environments - currently works
+            return True
+        else:
+            return False
+
     def is_square_occupied_colour_light(self, image_path):
         image = cv2.imread(image_path)
+
+        # Define the amount to crop on each side
+        crop_amount = 10  # adjust this value as needed
+
+        # Get the dimensions of the image
+        height, width = image.shape[:2]
+
+        # Define the center and size for the crop
+        center = (width // 2, height // 2)
+        size = (width - 2 * crop_amount, height - 2 * crop_amount)
+
+        # Crop the image
+        image = cv2.getRectSubPix(image, size, center)
         # Calculate the mean color of the input image
         image_mean_colour = cv2.mean(image)
 
@@ -85,6 +160,19 @@ class Detector:
 
     def is_square_occupied_colour_dark(self, image_path):
         image = cv2.imread(image_path)
+        # Define the amount to crop on each side
+        crop_amount = 10  # adjust this value as needed
+
+        # Get the dimensions of the image
+        height, width = image.shape[:2]
+
+        # Define the center and size for the crop
+        center = (width // 2, height // 2)
+        size = (width - 2 * crop_amount, height - 2 * crop_amount)
+
+        # Crop the image
+        image = cv2.getRectSubPix(image, size, center)
+
         # Calculate the mean color of the input image
         image_mean_colour = cv2.mean(image)
 
@@ -97,20 +185,152 @@ class Detector:
         else:
             return False
 
-    def is_square_occupied_contours(self, image_path, min_contour_area=5000):
+    def is_square_occupied_contours_black(self, image_path):
         image = cv2.imread(image_path)
+
+        # Define the amount to crop on each side
+        crop_amount = 10  # adjust this value as needed
+
+        # Get the dimensions of the image
+        height, width = image.shape[:2]
+
+        # Define the center and size for the crop
+        center = (width // 2, height // 2)
+        size = (width - 2 * crop_amount, height - 2 * crop_amount)
+
+        # Crop the image
+        image = cv2.getRectSubPix(image, size, center)
+
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-        _, thresholded = cv2.threshold(blurred, 127, 255, cv2.THRESH_BINARY)
-        cv2.imwrite("bw.png",thresholded)
-        contours, _ = cv2.findContours(thresholded, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        cv2.imwrite("grayscale.png", _)
-        for contour in contours:
-            if cv2.contourArea(contour) > min_contour_area:
-                return True
+        _, thresholded = cv2.threshold(blurred, 127, 127, cv2.THRESH_BINARY)
+
+        # Check for white pixel in the center
+        center_pixel = thresholded[height // 2, width // 2]
+        if center_pixel == 0:  # 255 represents white in a grayscale image
+            return True
 
         return False
 
-detector = Detector()
+    def is_square_occupied_contours_white(self, image_path):
+        image = cv2.imread(image_path)
 
-print(detector.is_square_occupied_contours("squares/E_4.png"))
+        # Define the amount to crop on each side
+        crop_amount = 10  # adjust this value as needed
+
+        # Get the dimensions of the image
+        height, width = image.shape[:2]
+
+        # Define the center and size for the crop
+        center = (width // 2, height // 2)
+        size = (width - 2 * crop_amount, height - 2 * crop_amount)
+
+        # Crop the image
+        image = cv2.getRectSubPix(image, size, center)
+
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        _, thresholded = cv2.threshold(blurred, 200, 255, cv2.THRESH_BINARY)
+
+        # Check for white pixel in the center
+        center_pixel = thresholded[height // 2, width // 2]
+        if center_pixel == 255:  # 255 represents white in a grayscale image
+            return True
+
+        return False
+
+    def what_colour(self, image_path):
+        image = cv2.imread(image_path)
+
+        # Define the amount to crop on each side
+        crop_amount = 10  # adjust this value as needed
+
+        # Get the dimensions of the image
+        height, width = image.shape[:2]
+
+        # Define the center and size for the crop
+        center = (width // 2, height // 2)
+        size = (width - 2 * crop_amount, height - 2 * crop_amount)
+
+        # Crop the image
+        image = cv2.getRectSubPix(image, size, center)
+
+        # Calculate the average color of the cropped image
+        avg_color_per_row = np.average(image, axis=0)
+        avg_color = np.average(avg_color_per_row, axis=0)
+
+        # If the average color is closer to white (255, 255, 255), it's a light piece
+        if np.linalg.norm(avg_color - np.array([255, 255, 255])) < np.linalg.norm(avg_color):
+            return 1  # Light piece
+        else:
+            return 2  # Dark piece
+
+    def process_chessboard(self):
+        self.previous_occupied_square_array = self.occupied_square_array
+        settings.set_value("previous_board", self.previous_occupied_square_array)
+
+        # Define the row labels
+        row_labels = ['H', 'G', 'F', 'E', 'D', 'C', 'B', 'A']
+        for i, row in enumerate(self.chessboard_colour_array):
+            for j, square in enumerate(row):
+                # Define the flag
+                average = 0
+                # Construct the image path
+                image_path = os.path.join("squares", f"{row_labels[i]}_{j + 1}.png")
+                # Load the image
+                img = cv2.imread(image_path)
+                if img is None:
+                    print(f"Image not found: {image_path}")
+                    continue
+                # Process the image
+                if square == 0:
+                    if self.is_square_occupied_colour_dark(image_path):
+                        average += 1
+                    if self.is_square_occupied_contours_black(image_path):
+                        average += 1
+                    if self.is_square_occupied_contours_white(image_path):
+                        average += 1
+                    if self.is_square_occupied_edges_white(image_path):
+                        average += 1
+                    if self.is_square_occupied_edges_black(image_path):
+                        average += 1
+
+                    if average >= 3:
+                        self.occupied_square_array[i][j] = self.what_colour(image_path)
+
+                    else:
+                        self.occupied_square_array[i][j] = 0
+
+                elif square == 1:
+                    if self.is_square_occupied_colour_light(image_path):
+                        average += 1
+                    if self.is_square_occupied_contours_black(image_path):
+                        average += 1
+                    if self.is_square_occupied_contours_white(image_path):
+                        average += 1
+                    if self.is_square_occupied_edges_white(image_path):
+                        average += 1
+                    if self.is_square_occupied_edges_black(image_path):
+                        average += 1
+
+                    if average >= 3:
+                        self.occupied_square_array[i][j] = self.what_colour(image_path)
+
+                    else:
+                        self.occupied_square_array[i][j] = 0
+
+        settings.set_value("current_board",self.occupied_square_array)
+        return self.occupied_square_array
+
+        # for row in settings.return_value("current_board"):
+        #     print(row)
+
+
+#
+detector = Detector()
+#
+detector.process_chessboard()
+# print("Detected")
+# for row in detector.occupied_square_array:
+#     print(row)
+

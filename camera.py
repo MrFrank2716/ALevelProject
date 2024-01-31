@@ -23,8 +23,8 @@ class Camera:
         frame_surface = pygame.transform.rotate(frame_surface, -90)
 
         # Get the dimension of the frame
-        width = frame_surface.get_width()
-        height = frame_surface.get_height()
+        # width = frame_surface.get_width()
+        # height = frame_surface.get_height()
 
         # Scale the surface
         # frame_surface = pygame.transform.scale(frame_surface, (
