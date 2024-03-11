@@ -2,6 +2,7 @@ import chess
 import chess.svg
 import pygame
 import pygame_gui
+import internet_chess
 from PIL import Image
 import numpy
 from settings import *
@@ -12,22 +13,22 @@ class GameEngine():
     def __init__(self):
         self.board = chess.Board()
         self.move_list = []
-        self.previous_board = [[1, 1, 0, 0, 0, 0, 1, 1],
-                        [1, 1, 0, 0, 0, 0, 1, 1],
-                        [1, 1, 0, 0, 0, 0, 1, 1],
-                        [1, 1, 0, 0, 0, 0, 1, 1],
-                        [1, 1, 0, 0, 0, 0, 1, 1],
-                        [1, 1, 0, 0, 0, 0, 1, 1],
-                        [1, 1, 0, 0, 0, 0, 1, 1],
-                        [1, 1, 0, 0, 0, 0, 1, 1]]
-        self.current_board = [[1, 1, 0, 0, 0, 0, 1, 1],
-                        [1, 1, 0, 0, 0, 0, 1, 1],
-                        [1, 1, 0, 0, 0, 0, 1, 1],
-                        [1, 1, 0, 0, 0, 0, 1, 1],
-                        [1, 1, 0, 0, 0, 0, 1, 1],
-                        [1, 1, 0, 0, 0, 0, 1, 1],
-                        [1, 1, 0, 0, 0, 0, 1, 1],
-                        [1, 1, 0, 0, 0, 0, 1, 1]]
+        self.previous_board = [[2, 2, 0, 0, 0, 0, 1, 1],
+                        [2, 2, 0, 0, 0, 0, 1, 1],
+                        [2, 2, 0, 0, 0, 0, 1, 1],
+                        [2, 2, 0, 0, 0, 0, 1, 1],
+                        [2, 2, 0, 0, 0, 0, 1, 1],
+                        [2, 2, 0, 0, 0, 0, 1, 1],
+                        [2, 2, 0, 0, 0, 0, 1, 1],
+                        [2, 2, 0, 0, 0, 0, 1, 1]]
+        self.current_board = [[2, 2, 0, 0, 0, 0, 1, 1],
+                               [2, 2, 0, 0, 0, 0, 1, 1],
+                               [2, 2, 0, 0, 0, 0, 1, 1],
+                               [2, 2, 0, 0, 0, 0, 1, 1],
+                               [2, 2, 0, 0, 0, 0, 1, 1],
+                               [2, 2, 0, 0, 0, 0, 1, 1],
+                               [2, 2, 0, 0, 0, 0, 1, 1],
+                               [2, 2, 0, 0, 0, 0, 1, 1]]
 
     def move(self, move):
         self.board.push(move)
@@ -135,11 +136,17 @@ class GameEngine():
                     elif old_board[i][j] != 0 and new_board[i][j] != 0:
                         from_square = square
                         to_square = square
+                    elif old_board[i][j] != 0 and new_board[i][j] == 0 and from_square is None:
+                        from_square = square
+                    elif old_board[i][j] == 0 and new_board[i][j] != 0 and to_square is None:
+                        to_square = square
+        internet_chess.api.make_move(from_square,to_square)
         return str(from_square) + str(to_square)
+
 
     def movepieces(self):
         self.previous_board = self.current_board
-        self.current_board = numpy.flip(numpy.flip(numpy.rot90(detector.process_chessboard()),1),0)
+        self.current_board = numpy.rot90(numpy.flip(numpy.flip(detector.process_chessboard(),1),0))
         for row in self.previous_board:
             print(row)
 
@@ -150,12 +157,11 @@ class GameEngine():
         self.push_move(str(self.find_move(self.previous_board,self.current_board)))
 
 
-
     def push_move(self,declared_move):
         move = chess.Move.from_uci(declared_move)
-        print(declared_move)
         # Make the move
         self.board.push(move)
+
 
 
 

@@ -1,5 +1,6 @@
 import random
-
+from sklearn.cluster import KMeans
+from collections import Counter
 from settings import *
 import cv2
 from PIL import Image
@@ -239,11 +240,13 @@ class Detector:
 
         return False
 
-    def what_colour(self, image_path):
+
+    def detect_colour_1(self, image_path):
+        # Load the image
         image = cv2.imread(image_path)
 
         # Define the amount to crop on each side
-        crop_amount = 10  # adjust this value as needed
+        crop_amount = 30  # adjust this value as needed
 
         # Get the dimensions of the image
         height, width = image.shape[:2]
@@ -255,15 +258,114 @@ class Detector:
         # Crop the image
         image = cv2.getRectSubPix(image, size, center)
 
-        # Calculate the average color of the cropped image
-        avg_color_per_row = np.average(image, axis=0)
-        avg_color = np.average(avg_color_per_row, axis=0)
+        # Convert the image to HSV
+        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-        # If the average color is closer to white (255, 255, 255), it's a light piece
-        if np.linalg.norm(avg_color - np.array([255, 255, 255])) < np.linalg.norm(avg_color):
-            return 1  # Light piece
+        # Define the colour range for blue and black
+        lower_blue = np.array([100, 150, 0])
+        upper_blue = np.array([140, 255, 255])
+        lower_black = np.array([0, 0, 0])
+        upper_black = np.array([180, 255, 50])
+
+        # Create masks for blue and black
+        mask_blue = cv2.inRange(hsv, lower_blue, upper_blue)
+        mask_black = cv2.inRange(hsv, lower_black, upper_black)
+        # Apply thresholding
+        _, mask_blue = cv2.threshold(mask_blue, 5, 255, cv2.THRESH_BINARY)
+        _, mask_black = cv2.threshold(mask_black, 5, 255, cv2.THRESH_BINARY)
+
+        # Check if the colours are present in the image
+        is_blue_present = np.any(mask_blue)
+        is_black_present = np.any(mask_black)
+
+        # Return 1 for blue, 2 for black, or 0 for neither
+        if is_blue_present:
+            return 1
+        elif is_black_present:
+            return 2
         else:
-            return 2  # Dark piece
+            return 0
+
+    def detect_colour_2(self, image_path):
+        # Load the image
+        image = cv2.imread(image_path)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+        # Reshape the image to be a list of pixels
+        pixels = image.reshape(-1, 3)
+
+        # Perform K-means clustering to find the most dominant colors
+        kmeans = KMeans(n_clusters=3)
+        kmeans.fit(pixels)
+
+        # Count the number of pixels associated with each cluster label
+        label_counts = Counter(kmeans.labels_)
+
+        # Get the most common cluster label
+        dominant_color = kmeans.cluster_centers_[label_counts.most_common(1)[0][0]]
+
+        # Define the colour range for blue and black
+        lower_blue = np.array([100, 150, 0])
+        upper_blue = np.array([140, 255, 255])
+        lower_black = np.array([0, 0, 0])
+        upper_black = np.array([180, 255, 50])
+
+        # Check if the dominant colour is within the range for blue or black
+        is_blue = np.all((lower_blue <= dominant_color) & (dominant_color <= upper_blue))
+        is_black = np.all((lower_black <= dominant_color) & (dominant_color <= upper_black))
+
+        # Return 1 for blue, 2 for black, or 0 for neither
+        if is_blue:
+            return 1
+        elif is_black:
+            return 2
+        else:
+            return 0
+
+    def detect_colour_3(self, image_path):
+        # Load the image
+        image = cv2.imread(image_path)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+        # Define the colour range for blue and black
+        lower_blue = np.array([100, 150, 0])
+        upper_blue = np.array([140, 255, 255])
+        lower_black = np.array([0, 0, 0])
+        upper_black = np.array([180, 255, 50])
+
+        # Create masks for blue and black
+        mask_blue = cv2.inRange(image, lower_blue, upper_blue)
+        mask_black = cv2.inRange(image, lower_black, upper_black)
+
+        # Calculate the colour histograms
+        hist_blue = cv2.calcHist([image], [0], mask_blue, [256], [0, 256])
+        hist_black = cv2.calcHist([image], [0], mask_black, [256], [0, 256])
+
+        # Check if the colours are present in the image
+        is_blue_present = np.sum(hist_blue) > 0
+        is_black_present = np.sum(hist_black) > 0
+
+        # Return 1 for blue, 2 for black, or 0 for neither
+        if is_blue_present:
+            return 1
+        elif is_black_present:
+            return 2
+        else:
+            return 0
+
+    def detect_chess_piece_colour(self, image_path):
+        # Initialize a list to store the detected colours
+        detected_colors = []
+
+        # Call each detect_colour function once and store the result
+        detected_colors.append(self.detect_colour_1(image_path))
+        detected_colors.append(self.detect_colour_2(image_path))
+        detected_colors.append(self.detect_colour_3(image_path))
+
+        # Compute the most frequently detected colour
+        most_common_colour = Counter(detected_colors).most_common(1)[0][0]
+
+        return most_common_colour
 
     def process_chessboard(self):
         self.previous_occupied_square_array = self.occupied_square_array
@@ -296,7 +398,7 @@ class Detector:
                         average += 1
 
                     if average >= 3:
-                        self.occupied_square_array[i][j] = self.what_colour(image_path)
+                        self.occupied_square_array[i][j] = self.detect_chess_piece_colour(image_path)
 
                     else:
                         self.occupied_square_array[i][j] = 0
@@ -314,7 +416,7 @@ class Detector:
                         average += 1
 
                     if average >= 3:
-                        self.occupied_square_array[i][j] = self.what_colour(image_path)
+                        self.occupied_square_array[i][j] = self.detect_chess_piece_colour(image_path)
 
                     else:
                         self.occupied_square_array[i][j] = 0
@@ -322,15 +424,5 @@ class Detector:
         settings.set_value("current_board",self.occupied_square_array)
         return self.occupied_square_array
 
-        # for row in settings.return_value("current_board"):
-        #     print(row)
 
-
-#
 detector = Detector()
-#
-detector.process_chessboard()
-# print("Detected")
-# for row in detector.occupied_square_array:
-#     print(row)
-

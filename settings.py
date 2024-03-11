@@ -20,6 +20,7 @@ class GlobalSettings:
       "window_switch_time": 0,
       "camera_scale": 8,
       "cam_port": 0,
+      "api_token": "lip_vgWNdf2tswpS34w6HbCb",
       "calibration_angle": 0, # 90 degree intervals
       "square_array": None,
       "previous_board": [[1, 1, 0, 0, 0, 0, 1, 1],
