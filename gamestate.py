@@ -57,30 +57,6 @@ class GameEngine():
     def valid_moves(self):
         return self.board.legal_moves
 
-    # def find_move2(self, current_board, detected_board):
-    #     letters = 'abcdefgh'
-    #     numbers = '87654321'
-    #     for i in range(8):
-    #         for j in range(8):
-    #             if current_board[i][j] == 1 and detected_board[i][j] == 0:
-    #                 start = letters[j] + numbers[7-i]
-    #             if current_board[i][j] == 0 and detected_board[i][j] == 1:
-    #                 end = letters[j] + numbers[7-i]
-    #     move = chess.Move.from_uci(start + end)
-    #
-    #     # Validate the move
-    #     # if start not in chessGame.valid_moves():
-    #     #     raise ValueError(f"The move {start + end} is not legal.")
-    #
-    #     # Make the move
-    #     # chessGame.move(move)
-    #
-    #     # Check if a piece was captured
-    #     # if chessGame.board.is_capture(move):
-    #     #     print(f"A piece was captured at {end}.")
-    #     # print(move)
-    #     # return start + end
-
     def find_chess_move(self):
         # Boards
         previous_board = list(settings.return_value("previous_board"))
@@ -102,18 +78,8 @@ class GameEngine():
                 elif current_board[i][j] == 1:  # Piece moved to this square
                     move_to = square
         print(f"The move was from {move_from} to {move_to}.")
-        # Print the move
-        # if move_from and move_to:
-        #     print(f"The move was from {move_from} to {move_to}.")
-        # else:
-        #     print("No valid move detected.")
 
-        # legal_moves = list(self.board.legal_moves)
         move = chess.Move.from_uci(move_from + move_to)
-        # Validate the move
-        # if move not in legal_moves:
-        #   raise ValueError(f"The move {move_from + move_to} is not legal.")
-
         # Make the move
         self.board.push(move)
 
@@ -161,6 +127,8 @@ class GameEngine():
         move = chess.Move.from_uci(declared_move)
         # Make the move
         self.board.push(move)
+        # Add move to the list
+        self.move_list.append(declared_move)
 
 
 

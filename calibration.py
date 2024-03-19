@@ -1,11 +1,15 @@
 import pygame
 import pygame_gui
 import time
+import json
 import main
 from camera import *
 from settings import *
 from main import *
 from window import *
+with open('calibration.json') as json_file:
+    button_colours = json.load(json_file)
+
 class CalibrationWindow:
     def __init__(self):
         pygame.init()
@@ -18,7 +22,7 @@ class CalibrationWindow:
         pygame.display.set_caption(settings.return_value("latest_caption"))
 
         # Declaring all the buttons
-        self.main_window_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((self.window_width/2 + 150, self.window_height - 50), settings.return_value("standard_button")),
+        self.main_window_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((self.window_width/2 + 100, self.window_height - 50), settings.return_value("standard_button")),
                                                                text='Main',
                                                                manager=self.manager,
                                                                )
@@ -35,6 +39,7 @@ class CalibrationWindow:
                                       settings.return_value("calibration_button")),
             text='Top Left (A8)',
             manager=self.manager,
+            object_id='#calibration_button'
             )
 
         self.top_right_button = pygame_gui.elements.UIButton(
@@ -42,6 +47,7 @@ class CalibrationWindow:
                                       settings.return_value("calibration_button")),
             text='Top Right (H8)',
             manager=self.manager,
+            object_id='#calibration_button'
         )
 
         self.bottom_left_button = pygame_gui.elements.UIButton(
@@ -49,6 +55,7 @@ class CalibrationWindow:
                                       settings.return_value("calibration_button")),
             text='Bottom Left (A1)',
             manager=self.manager,
+            object_id='#calibration_button'
         )
 
         self.bottom_right_button = pygame_gui.elements.UIButton(
@@ -56,6 +63,14 @@ class CalibrationWindow:
                                       settings.return_value("calibration_button")),
             text='Bottom Right (H1)',
             manager=self.manager,
+            object_id='#calibration_button'
+        )
+
+        self.matrix_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((self.window_width / 2 - 200, self.window_height - 50), (200, 50)),
+            text='Capture Matrix',
+            manager=self.manager,
+
         )
 
     def show(self):
@@ -75,13 +90,17 @@ class CalibrationWindow:
                 if event.type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.main_window_button:
                         settings.set_value("camera_scale",4)
-                        #windowHandler.switchWindow()
                         running = False  # Stop updating the current window
 
                     if event.ui_element == self.rotate_button:
                         angle = settings.return_value("calibration_angle") + 90
                         settings.set_value("calibration_angle", angle)
 
+                    if event.ui_element == self.matrix_button:
+                        translator.setMatrix(
+                            translator.calculateMatrix(translator.getChessboardCorners(camera.return_frame())))
+
+                        settings.set_value("latest_caption", "Main Window")
 
                 if running:  # Only process events and update the window if running is True
                     self.manager.process_events(event)

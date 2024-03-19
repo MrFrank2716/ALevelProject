@@ -24,26 +24,15 @@ class App:
 
         self.manager = pygame_gui.UIManager((self.window_width, self.window_height), settings.return_value("dark_mode"))
 
+        self.current_turn = 'white'
+
         pygame.display.set_caption(settings.return_value("latest_caption"))
 
         # Declaring all the buttons
-        self.matrix_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 275), settings.return_value("standard_button")),
-            text='Matrix',
-            manager=self.manager,
 
-            )
-
-        self.transform_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 375), settings.return_value("standard_button")),
-            text='Transform',
-            manager=self.manager,
-
-            )
-
-        self.convert_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 475), settings.return_value("standard_button")),
-            text='Convert',
+        self.play_move_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((self.window_width / 2 - 200, self.window_height - 50), settings.return_value("standard_button")),
+            text='Play Move',
             manager=self.manager,
 
             )
@@ -54,26 +43,52 @@ class App:
             manager=self.manager,
 
             )
-        self.white_time = pygame_gui.elements.UITextBox(
+        self.player_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((self.window_width / 2 - 300, self.window_height - 50),
+                                      settings.return_value("standard_button")),
+            text='Players',
+            manager=self.manager,
+
+        )
+        self.white_player = pygame_gui.elements.UITextBox(
             relative_rect=pygame.Rect((0, 0), (self.window_width/4, 100)),
-            html_text='',
+            html_text='<b>White Player Turn</b>',
             manager=self.manager
             )
-        self.black_time = pygame_gui.elements.UITextBox(
+        self.black_player = pygame_gui.elements.UITextBox(
             relative_rect=pygame.Rect((self.window_width - self.window_width/4, 0), (self.window_width / 4, 100)),
-            html_text='',
+            html_text='Black Player Turn',
             manager=self.manager
         )
         self.move_history = pygame_gui.elements.UITextBox(
             relative_rect=pygame.Rect((self.window_width - self.window_width / 4, self.window_height - 300), (self.window_width / 4, 300)),
-            html_text='<h1>Move History</h1>'
-                      '<br>'
-                      '<p>Test Test</p>'
-                      '<a href="https://www.mrfrank.art">This is a link</a>',
+            html_text='<p>_____Move History_____</p>',
             manager=self.manager
         )
+        self.white_player.set_active_effect(pygame_gui.TEXT_EFFECT_TYPING_APPEAR)
+        self.black_player.set_active_effect(pygame_gui.TEXT_EFFECT_FADE_OUT)
 
+    def update_players(self):
+        # Update the player text boxes based on the current turn
+        if self.current_turn == 'white':
+            self.white_player.html_text = '<p><b>White Player Turn</b></p>'
+            self.black_player.html_text = '<p>Black Player Turn</p>'
+            self.white_player.set_active_effect(pygame_gui.TEXT_EFFECT_TYPING_APPEAR)
+            self.black_player.set_active_effect(pygame_gui.TEXT_EFFECT_FADE_OUT)
+        else:
+            self.white_player.html_text = '<p>White Player Turn</p>'
+            self.black_player.html_text = '<p><b>Black Player Turn</b></p>'
+            self.black_player.set_active_effect(pygame_gui.TEXT_EFFECT_TYPING_APPEAR)
+            self.white_player.set_active_effect(pygame_gui.TEXT_EFFECT_FADE_OUT)
+        self.white_player.rebuild()
+        self.black_player.rebuild()
+    def update_move_history(self, moves):
+        # Convert the list of moves to a string
+        moves_str = '<br>'.join(moves)
 
+        # Update the move history text box
+        self.move_history.html_text = f'<p>_____Move History_____</p><br><p>{chessGame.move_list}</p>'
+        self.move_history.rebuild()
 
     def run(self):
         settings.set_value("latest_caption", "Main Window")
@@ -96,27 +111,21 @@ class App:
 
                 if event.type == pygame_gui.UI_BUTTON_PRESSED:
                     chessboard.needUpdateTrue()  # Set the flag to True when a button is pressed
-                    if event.ui_element == self.matrix_button:
-                        translator.setMatrix(
-                            translator.calculateMatrix(translator.getChessboardCorners(camera.return_frame())))
+                    if event.ui_element == self.player_button:
+                        self.current_turn = 'black' if self.current_turn == 'white' else 'white'
+                        self.update_players()  # Update the player text boxes
 
-                        time.sleep(0.27)
-                        settings.set_value("latest_caption", "Main Window")
-
-                    if event.ui_element == self.transform_button:
+                    if event.ui_element == self.play_move_button:
                         translator.translate(camera.return_frame(), translator.returnMatrix(),
                                              translator.return_transformed_image_name())
-                        time.sleep(0.27)
-
-                        settings.set_value("latest_caption", "Main Window")
-
-                    if event.ui_element == self.convert_button:
                         chessGame.movepieces()
-                        time.sleep(0.27)
+                        # Update the turn
+                        self.current_turn = 'black' if self.current_turn == 'white' else 'white'
+                        self.update_players()  # Update the player text boxes
+
                         settings.set_value("latest_caption", "Main Window")
 
                     if event.ui_element == self.calibration_button:
-                        # windowHandler.switchWindow()
                         calibration_window = CalibrationWindow()
                         calibration_window.show()
 
@@ -144,6 +153,7 @@ def start_main():
     if __name__ == "__main__":
         app = App()
         app.run()
+
 
 
 start_main()

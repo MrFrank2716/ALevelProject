@@ -1,4 +1,11 @@
 {
+    "calibration_button": {
+        "normal_bg": "#000000",
+        "hovered_bg": "#111111",
+        "disabled_bg": "#222222",
+        "selected_bg": "#333333",
+        "active_bg": "#444444"
+    },
     "window": {
         "bg": "#000000"
     },
