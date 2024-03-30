@@ -45,5 +45,15 @@ class Camera:
         height = int(iy * scale_factor)
         return pygame.transform.scale(img, (width, height))
 
+    def switch_camera(self, new_port):
+        # Release the current capture
+        self.release_capture()
+
+        # Update the settings
+        settings.set_value("cam_port", new_port)
+
+        # Start the capture with the new port
+        self.cap = ConcurrentVideoCapture(settings.return_value("cam_port"))
+        self.cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.75)  # 0.75 to turn on auto exposure
 
 camera = Camera()

@@ -56,4 +56,3 @@ class WindowHandler:
         settings.set_value("latest_caption", "Switching Window...")
         pygame.display.set_caption(settings.return_value("latest_caption"))
         pygame.display.update()
-        time.sleep(settings.return_value("window_switch_time"))

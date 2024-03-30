@@ -9,6 +9,7 @@ import window
 from translate import *
 from gamestate import *
 from calibration import *
+from settingwindow import *
 from settings import *
 from camera import *
 from window import *
@@ -43,10 +44,10 @@ class App:
             manager=self.manager,
 
             )
-        self.player_button = pygame_gui.elements.UIButton(
+        self.setting_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((self.window_width / 2 - 300, self.window_height - 50),
                                       settings.return_value("standard_button")),
-            text='Players',
+            text='Settings',
             manager=self.manager,
 
         )
@@ -55,16 +56,19 @@ class App:
             html_text='<b>White Player Turn</b>',
             manager=self.manager
             )
+        self.white_player.text_horiz_alignment = "center"
         self.black_player = pygame_gui.elements.UITextBox(
             relative_rect=pygame.Rect((self.window_width - self.window_width/4, 0), (self.window_width / 4, 100)),
             html_text='Black Player Turn',
             manager=self.manager
         )
+
         self.move_history = pygame_gui.elements.UITextBox(
             relative_rect=pygame.Rect((self.window_width - self.window_width / 4, self.window_height - 300), (self.window_width / 4, 300)),
-            html_text='<p>_____Move History_____</p>',
+            html_text='<p><u>Move History</u></p>',
             manager=self.manager
         )
+
         self.white_player.set_active_effect(pygame_gui.TEXT_EFFECT_TYPING_APPEAR)
         self.black_player.set_active_effect(pygame_gui.TEXT_EFFECT_FADE_OUT)
 
@@ -87,10 +91,11 @@ class App:
         moves_str = '<br>'.join(moves)
 
         # Update the move history text box
-        self.move_history.html_text = f'<p>_____Move History_____</p><br><p>{chessGame.move_list}</p>'
+        self.move_history.html_text = f'<p><u>Move History</u></p><br><p>{chessGame.move_list}</p>'
         self.move_history.rebuild()
 
     def run(self):
+
         settings.set_value("latest_caption", "Main Window")
         settings.set_value("camera_scale", 8)
         clock = pygame.time.Clock()
@@ -111,9 +116,9 @@ class App:
 
                 if event.type == pygame_gui.UI_BUTTON_PRESSED:
                     chessboard.needUpdateTrue()  # Set the flag to True when a button is pressed
-                    if event.ui_element == self.player_button:
-                        self.current_turn = 'black' if self.current_turn == 'white' else 'white'
-                        self.update_players()  # Update the player text boxes
+                    if event.ui_element == self.setting_button:
+                        setting_window = SettingWindow()
+                        setting_window.show()
 
                     if event.ui_element == self.play_move_button:
                         translator.translate(camera.return_frame(), translator.returnMatrix(),
