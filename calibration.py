@@ -18,7 +18,7 @@ class CalibrationWindow:
         self.window_height = settings.return_value("window_height")
         self.window_surface = pygame.display.set_mode((self.window_width, self.window_height))
         self.manager = pygame_gui.UIManager((self.window_width, self.window_height))
-        self.manager = pygame_gui.UIManager((self.window_width, self.window_height), settings.return_value("dark_mode"))
+        self.manager = pygame_gui.UIManager((self.window_width, self.window_height), settings.return_value(main.toggle_theme))
         pygame.display.set_caption(settings.return_value("latest_caption"))
 
         # Declaring all the buttons

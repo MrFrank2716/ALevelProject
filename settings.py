@@ -12,6 +12,7 @@ class GlobalSettings:
       "calibration_button": (160,50),
       "dark_mode": "dark_mode.json",
       "light_mode": "light_mode.json",
+      "theme_toggle": "dark_mode",
       "latest_caption": "Main window",
       "base": 900,
       "height": 900,
@@ -46,7 +47,7 @@ class GlobalSettings:
 
   def set_value(self,set,val):
     self.setting_values[set] = val
-
+global settings
 settings = GlobalSettings()
 
 class PieceSettings:

@@ -1,6 +1,7 @@
 import pygame
 from serial.tools import list_ports
 import pygame_gui
+import main
 from settings import *
 from calibration import CalibrationWindow
 from main import *
@@ -13,7 +14,7 @@ class SettingWindow:
         self.window_height = settings.return_value("window_height")
         self.window_surface = pygame.display.set_mode((self.window_width, self.window_height))
         self.manager = pygame_gui.UIManager((self.window_width, self.window_height))
-        self.manager = pygame_gui.UIManager((self.window_width, self.window_height), settings.return_value("dark_mode"))
+        self.manager = pygame_gui.UIManager((self.window_width, self.window_height), settings.return_value(main.toggle_theme))
         pygame.display.set_caption(settings.return_value("latest_caption"))
         self.buttons = {}  # This line to initialize the buttons dictionary
         labels = ["Back to Main","Toggle Theme","Camera Settings","Calibration Window","Camera Selected","Game Settings"]
@@ -37,6 +38,13 @@ class SettingWindow:
             manager=self.manager
         )
         self.selected_camera.text_horiz_alignment = "center"
+    def toggleTheme(self):
+        toggle_theme = main.toggle_theme
+        if toggle_theme == "dark_mode":
+            main.toggle_theme = "light_mode"
+        else:
+            main.toggle_theme = "dark_mode"
+        self.__init__()
 
     def show(self):
         running = True
@@ -69,9 +77,9 @@ class SettingWindow:
                             self.camera_port = 0
                             self.selected_camera.set_text("Camera 1")
                     if event.ui_element == self.buttons["Toggle Theme"]:
-                        if settings.return_value("")
-
-
+                        #self.toggleTheme()
+                        main.toggleTheme()
+                        self.__init__()
                 if running:  # Only process events and update the window if running is True
                     self.manager.process_events(event)
 

@@ -6,6 +6,7 @@ import pygame
 import settings
 import translate
 import window
+from calibration import CalibrationWindow
 from translate import *
 from gamestate import *
 from calibration import *
@@ -13,17 +14,25 @@ from settingwindow import *
 from settings import *
 from camera import *
 from window import *
+old_theme = "dark_mode"
+toggle_theme = "dark_mode"
+def toggleTheme():
+    global toggle_theme
+    if toggle_theme == "dark_mode":
+        toggle_theme = "light_mode"
+    else:
+        toggle_theme = "dark_mode"
 
 
 class App:
     def __init__(self):
         pygame.init()
-
         self.window_width = settings.return_value("window_width")
         self.window_height = settings.return_value("window_height")
         self.window_surface = pygame.display.set_mode((self.window_width, self.window_height))
 
-        self.manager = pygame_gui.UIManager((self.window_width, self.window_height), settings.return_value("dark_mode"))
+
+        self.manager = pygame_gui.UIManager((self.window_width, self.window_height), settings.return_value(toggle_theme))
 
         self.current_turn = 'white'
 
@@ -71,6 +80,57 @@ class App:
 
         self.white_player.set_active_effect(pygame_gui.TEXT_EFFECT_TYPING_APPEAR)
         self.black_player.set_active_effect(pygame_gui.TEXT_EFFECT_FADE_OUT)
+    def reload_gui(self):
+        pygame.init()
+        self.window_width = settings.return_value("window_width")
+        self.window_height = settings.return_value("window_height")
+        self.window_surface = pygame.display.set_mode((self.window_width, self.window_height))
+
+        self.manager = pygame_gui.UIManager((self.window_width, self.window_height),
+                                            settings.return_value(toggle_theme))
+        print(toggle_theme)
+        self.play_move_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((self.window_width / 2 - 200, self.window_height - 50),
+                                      settings.return_value("standard_button")),
+            text='Play Move',
+            manager=self.manager,
+
+        )
+        self.calibration_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((self.window_width / 2 + 100, self.window_height - 50),
+                                      settings.return_value("standard_button")),
+            text='Calibration',
+            manager=self.manager,
+
+        )
+        self.setting_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((self.window_width / 2 - 300, self.window_height - 50),
+                                      settings.return_value("standard_button")),
+            text='Settings',
+            manager=self.manager,
+
+        )
+        self.white_player = pygame_gui.elements.UITextBox(
+            relative_rect=pygame.Rect((0, 0), (self.window_width / 4, 100)),
+            html_text='<b>White Player Turn</b>',
+            manager=self.manager
+        )
+        self.white_player.text_horiz_alignment = "center"
+        self.black_player = pygame_gui.elements.UITextBox(
+            relative_rect=pygame.Rect((self.window_width - self.window_width / 4, 0), (self.window_width / 4, 100)),
+            html_text='Black Player Turn',
+            manager=self.manager
+        )
+
+        self.move_history = pygame_gui.elements.UITextBox(
+            relative_rect=pygame.Rect((self.window_width - self.window_width / 4, self.window_height - 300),
+                                      (self.window_width / 4, 300)),
+            html_text='<p><u>Move History</u></p>',
+            manager=self.manager
+        )
+
+        self.white_player.set_active_effect(pygame_gui.TEXT_EFFECT_TYPING_APPEAR)
+        self.black_player.set_active_effect(pygame_gui.TEXT_EFFECT_FADE_OUT)
 
     def update_players(self):
         # Update the player text boxes based on the current turn
@@ -96,6 +156,7 @@ class App:
 
     def run(self):
 
+
         settings.set_value("latest_caption", "Main Window")
         settings.set_value("camera_scale", 8)
         clock = pygame.time.Clock()
@@ -109,6 +170,13 @@ class App:
             time_delta = clock.tick(60) / 1000.0  # Tick the clock and get the time delta
 
             cameraSurface = camera.aspect_scale(camera.return_frame_surface(), (300, 200))
+            print(toggle_theme)
+            global old_theme
+            if old_theme == toggle_theme:
+                pass
+            else:
+                old_theme = toggle_theme
+                self.reload_gui()
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -158,7 +226,6 @@ def start_main():
     if __name__ == "__main__":
         app = App()
         app.run()
-
 
 
 start_main()
