@@ -18,18 +18,26 @@ class Camera:
         if not grabbed or frame is None:
             print("Could not read frame")
         # Convert the color space of the frame
-        self.frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        frame_surface = pygame.surfarray.make_surface(self.frame)
-        frame_surface = pygame.transform.rotate(frame_surface, -90)
+        else:
+            if settings.return_value("colourSpace") == "RGB":
+                self.frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            if settings.return_value("colourSpace") == "Gray":
+                self.frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            if settings.return_value("colourSpace") == "HSV":
+                self.frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+            if settings.return_value("colourSpace") == "YCrCb":
+                self.frame = cv2.cvtColor(frame, cv2.COLOR_BGR2YCrCb)
+            frame_surface = pygame.surfarray.make_surface(self.frame)
+            frame_surface = pygame.transform.rotate(frame_surface, -90)
 
-        # Get the dimension of the frame
-        # width = frame_surface.get_width()
-        # height = frame_surface.get_height()
+            # Get the dimension of the frame
+            # width = frame_surface.get_width()
+            # height = frame_surface.get_height()
 
-        # Scale the surface
-        # frame_surface = pygame.transform.scale(frame_surface, (
-        # width / settings.return_value("camera_scale"), height / settings.return_value("camera_scale")))
-        return frame_surface
+            # Scale the surface
+            # frame_surface = pygame.transform.scale(frame_surface, (
+            # width / settings.return_value("camera_scale"), height / settings.return_value("camera_scale")))
+            return frame_surface
 
     def return_frame(self):
         return self.frame

@@ -3,6 +3,8 @@ import pygame
 class GlobalSettings:
   def __init__(self):
     self.setting_values = {
+      "fps": 60,
+      "colourSpace": "RGB",
       "detect_chess_piece_threshold": 200,
       "dark_square_colour": "Green",
       "chessboard_image_path": "images/board.png",

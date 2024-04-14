@@ -82,7 +82,7 @@ class CalibrationWindow:
 
 
         while running:
-            time_delta = clock.tick(60) / 1000.0  # Tick the clock and get the time delta
+            time_delta = clock.tick(settings.return_value("fps")) / 1000.0  # Tick the clock and get the time delta
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False

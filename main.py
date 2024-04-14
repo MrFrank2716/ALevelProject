@@ -167,16 +167,10 @@ class App:
 
         while running:
             pygame.display.set_caption(settings.return_value("latest_caption"))
-            time_delta = clock.tick(60) / 1000.0  # Tick the clock and get the time delta
+            time_delta = clock.tick(settings.return_value("fps")) / 1000.0  # Tick the clock and get the time delta
 
             cameraSurface = camera.aspect_scale(camera.return_frame_surface(), (300, 200))
-            print(toggle_theme)
-            global old_theme
-            if old_theme == toggle_theme:
-                pass
-            else:
-                old_theme = toggle_theme
-                self.reload_gui()
+
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

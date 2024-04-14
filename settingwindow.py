@@ -6,6 +6,7 @@ from settings import *
 from calibration import CalibrationWindow
 from main import *
 from camera import *
+from cameraSettings import *
 class SettingWindow:
     def __init__(self):
         pygame.init()
@@ -52,7 +53,7 @@ class SettingWindow:
         settings.set_value("camera_scale", 4)
         windowHandler = WindowHandler()
         while running:
-            time_delta = clock.tick(60) / 1000.0  # Tick the clock and get the time delta
+            time_delta = clock.tick(settings.return_value("fps")) / 1000.0  # Tick the clock and get the time delta
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
@@ -80,6 +81,10 @@ class SettingWindow:
                         #self.toggleTheme()
                         main.toggleTheme()
                         self.__init__()
+                    if event.ui_element == self.buttons["Camera Settings"]:
+                        windowHandler.switchWindow()
+                        camerasettings_window = cameraSettings()
+                        camerasettings_window.show()
                 if running:  # Only process events and update the window if running is True
                     self.manager.process_events(event)
 
