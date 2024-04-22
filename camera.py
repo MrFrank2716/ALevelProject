@@ -1,6 +1,8 @@
 from concurrent_videocapture import ConcurrentVideoCapture
 import cv2
 import pygame
+
+import settings
 from settings import *
 
 
@@ -17,6 +19,7 @@ class Camera:
         grabbed, frame = self.cap.read()
         if not grabbed or frame is None:
             print("Could not read frame")
+            settings.set_value("latest_caption","Could not read Camera Image")
         # Convert the color space of the frame
         else:
             if settings.return_value("colourSpace") == "RGB":
